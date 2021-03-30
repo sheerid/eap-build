@@ -1,0 +1,20 @@
+FROM alpine:latest
+
+RUN apk add bash patch openjdk8 curl xmlstarlet
+
+ENV JAVA_HOME=/usr/lib/jvm/java-1.8-openjdk
+ENV PATH="$JAVA_HOME/bin:${PATH}"
+
+WORKDIR /build
+
+COPY src/ src/
+COPY build-eap7.sh .
+
+RUN ./build-eap7.sh
+
+# serve up zip file via HTTP - surely there's a better way
+WORKDIR /build/dist
+
+RUN apk add python3
+
+CMD python3 -m http.server 8000
