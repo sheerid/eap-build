@@ -24,7 +24,7 @@ By default, it builds the latest EAP 7 update. You can build other versions by p
 
     ./build-eap7.sh 7.2.3
 
-For EAP 6 versions, you should use 
+For EAP 6 versions, you should use
 
     ./build-eap6.sh
 
@@ -43,7 +43,7 @@ If you don't want to use git, download the archive, unzip it and run the main sc
 
 Versions
 --------
-The build-eap7.sh script supports 7.0.0->7.0.9, 7.1.0->7.1.4, 7.2.0->7.2.9, 7.3.0->7.3.10, 7.4.0->7.4.12
+The build-eap7.sh script supports 7.0.0->7.0.9, 7.1.0->7.1.4, 7.2.0->7.2.9, 7.3.0->7.3.10, 7.4.0->7.4.13
 
 The build-eap6.sh script supports 6.1.1, 6.2.0->6.2.4, 6.3.0->6.3.3, 6.4.0->6.4.23
 
@@ -68,10 +68,10 @@ You may want to build it without a checkout :
 
     docker build --tag hasalex/eap-build --file docker/Dockerfile-debian git@github.com:hasalex/eap-build.git
 
-You may choose 
+You may choose
 
 * an OS (debian, centos, alpine),
-* a version of JDK (default is 11), 
+* a version of JDK (default is 11),
 * a version of eap to build (default is empty AKA newest) :
 
     docker build --tag hasalex/eap-build:7.3.9_jdk8 --build-arg JDK_VERSION=8 --build-arg EAP_VERSION=7.3.9 --file docker/Dockerfile-alpine .
@@ -85,6 +85,6 @@ You may also test the build on *FreeBSD* with Vagrant :
 
 Prerequisite and systems supported
 ==================================
-The script is in bash. 
-It should run on almost all bash-compatible systems. 
+The script is in bash.
+It should run on almost all bash-compatible systems.
 You have to install **wget**, **unzip**, **patch**, **java (JDK)**, **grep**, **curl**, **maven** and **xmlstarlet** first.
