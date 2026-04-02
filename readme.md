@@ -1,5 +1,3 @@
-[![Build Status](https://travis-ci.com/hasalex/eap-build.svg?branch=master)](https://travis-ci.com/hasalex/eap-build)
-
 Building JBoss EAP, or something similar...
 
 Why ?
@@ -16,19 +14,25 @@ With git
 --------
 If you want to run the script :
 
-    git clone git://github.com/hasalex/eap-build.git
+    git clone git://github.com/CentEAP/eap-build.git
     cd eap-build
-    ./build-eap7.sh
+    ./build-eap.sh
 
 For EAP 8 versions, you should use
 
-    ./build-eap8.sh
+    ./build-eap.sh 8
+
+By default, it builds the latest EAP 8 update. 
+You can build other versions by passing the number to the build :
+
+    ./build-eap.sh 8.0.8
 
 For EAP 7 versions, you should use
 
     ./build-eap7.sh
 
-By default, it builds the latest EAP 7 update. You can build other versions by passing the number to the build :
+By default, it builds the latest EAP 7 update. 
+You can build other versions by passing the number to the build :
 
     ./build-eap7.sh 7.2.3
 
@@ -36,7 +40,8 @@ For EAP 6 versions, you should use
 
     ./build-eap6.sh
 
-By default, it builds the latest EAP 6 update. You can build other versions by passing the number to the build :
+By default, it builds the latest EAP 6 update. 
+You can build other versions by passing the number to the build :
 
     ./build-eap6.sh 6.4.19
 
@@ -44,21 +49,20 @@ Without git
 -----------
 If you don't want to use git, download the archive, unzip it and run the main script :
 
-    wget https://github.com/hasalex/eap-build/archive/master.zip
+    wget https://github.com/CentEAP/eap-build/archive/master.zip
     unzip master.zip
     cd eap-build-master
-    ./build-eap7.sh
+    ./build-eap.sh
 
 Versions
 --------
-The build-eap8.sh script supports 8.0.0
+The build-eap8.sh script supports 8.0.x, 8.1.0->8.1.5
 
-The build-eap7.sh script supports 7.0.0->7.0.9, 7.1.0->7.1.4, 7.2.0->7.2.9, 7.3.0->7.3.10, 7.4.0->7.4.18
+The build-eap7.sh script supports 7.0.0->7.0.9, 7.1.0->7.1.4, 7.2.0->7.2.9, 7.3.0->7.3.10, 7.4.0->7.4.24
 
 The build-eap6.sh script supports 6.1.1, 6.2.0->6.2.4, 6.3.0->6.3.3, 6.4.0->6.4.23
 
-Docker build
-============
+The build-eap.sh script detects the requested version and calls the appropriate script.
 
 You may build a docker image :
 
@@ -98,3 +102,11 @@ Prerequisite and systems supported
 The script is in bash.
 It should run on almost all bash-compatible systems.
 You have to install **wget**, **unzip**, **patch**, **java (JDK)**, **grep**, **curl**, **maven** and **xmlstarlet** first.
+
+Prerequisite on JDK are the same as JBoss EAP.
+Build needs 
+
+* JDK 17 -> 21 for EAP 8.1 (JDK 25 could be OK, but not for 8.1.3), 
+* JDK 11+ for EAP 8.0, 
+* JDK 8 -> 11 for EAP 7.x,
+* JDK 8 for EAP 6.x.

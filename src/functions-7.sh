@@ -16,14 +16,14 @@ function set_version {
     fi
     EAP_SHORT_VERSION=${EAP_VERSION%.*}
     SRC_FILE=jboss-eap-${EAP_VERSION}-src.zip
-    BUILD_HOME=$(pwd)
+    export BUILD_HOME=$(pwd)
     #echo BUILD_HOME=$BUILD_HOME
 
-    echo "Here we go. Building EAP version $EAP_VERSION."
+    log "Here we go. Building EAP version $EAP_VERSION."
 }
 
 function prepare_eap_source {
-    download_and_unzip http://ftp.redhat.com/redhat/jboss/eap/$EAP_VERSION/en/source/$SRC_FILE
+    download_and_unzip https://ftp.redhat.com/redhat/jboss/eap/$EAP_VERSION/en/source/$SRC_FILE
     cd $BUILD_HOME/work/jboss-eap-$EAP_SHORT_VERSION-src
     xml_clean eap
     cd $BUILD_HOME/work
@@ -34,18 +34,19 @@ function prepare_eap_source {
     else
         jboss-eap-$EAP_SHORT_VERSION-src/tools/download-maven.sh
         MVN=$PWD/maven/bin/mvn
+        M2_HOME=$PWD/maven
     fi
     cd $BUILD_HOME
 }
 
 function prepare_core_source {
     CORE_VERSION=$(get_module_version org.wildfly.core)
-    echo "Core version: $CORE_VERSION"
+    log "Core version: $CORE_VERSION"
     CORE_FULL_SOURCE_VERSION=$(grep "$CORE_VERSION=" src/jboss-eap-7.properties | cut -d '=' -f 2)
 
     if [ -z "$CORE_FULL_SOURCE_VERSION" ]
     then
-        download_and_unzip http://ftp.redhat.com/redhat/jboss/eap/$EAP_VERSION/en/source/jboss-eap-$EAP_VERSION-core-src.zip
+        download_and_unzip https://ftp.redhat.com/redhat/jboss/eap/$EAP_VERSION/en/source/jboss-eap-$EAP_VERSION-core-src.zip
         mv $BUILD_HOME/work/jboss-eap-$EAP_SHORT_VERSION-core-src $BUILD_HOME/work/wildfly-core-$CORE_VERSION
 
         cd $BUILD_HOME/work/wildfly-core-$CORE_VERSION/core-feature-pack
@@ -77,7 +78,7 @@ function build_core {
     cd $BUILD_HOME/work/wildfly-core-$CORE_VERSION
     maven_build core-feature-pack
     cd $BUILD_HOME
-    echo "Build done for Core $CORE_VERSION"
+    log "Build done for Core $CORE_VERSION"
 }
 
 function build_eap {
@@ -90,7 +91,7 @@ function build_eap {
       mv ee-dist dist
     else
       maven_build feature-pack
-      if [ "$EAP_SHORT_VERSION" != "7.1" ]
+      if [[ "$EAP_SHORT_VERSION" > "7.1" ]]
       then
         mv dist dist-new
         mv dist-legacy dist
@@ -98,7 +99,7 @@ function build_eap {
     fi
     maven_build dist
     cd $BUILD_HOME
-    echo "Build done for EAP $EAP_VERSION"
+    log "Build done for EAP $EAP_VERSION"
 }
 
 function maven_build {
@@ -112,11 +113,11 @@ function maven_build {
     fi
 
     if [[ "$EAP_SHORT_VERSION" > "7.3" ]]
-        then
-          mvn_command="$MVN clean install -s $settings -Dmaven.test.skip -Drelease=true -Denforcer.skip"
-        else
-          mvn_command="$MVN clean install -s $settings -Dmaven.test.skip -Drelease=true -DlegacyRelease=true -Denforcer.skip"
-        fi
+    then
+        mvn_command="$MVN clean install -s $settings -Dmaven.test.skip -Drelease=true -Denforcer.skip"
+    else
+        mvn_command="$MVN clean install -s $settings -Dmaven.test.skip -Drelease=true -DlegacyRelease=true -Denforcer.skip"
+    fi
     if [ "$MVN_OUTPUT" = "3" ]
     then
         echo "=== $msg (with output level $MVN_OUTPUT) ===" | tee -a $BUILD_HOME/work/build.log
@@ -154,7 +155,7 @@ function is_supported_version {
     supported_version=$(echo "$supported_versions," | grep -E "$1,")
     if [ -z $supported_version ]
     then
-        echo "Version $1 is not supported. Supported versions are $supported_versions"
+        log "Version $1 is not supported. Supported versions are $supported_versions"
         exit 1
     fi
     set -e
@@ -217,8 +218,8 @@ function xml_insert {
     rm .tmp.xml
 }
 function error {
-    echo >&2 $1
-    echo >&2 ""
-    echo >&2 "Build failed. You may have a look at the work/build.log file, maybe you'll find the reason why it failed."
+    log $1
+    echo ""
+    log "Build failed. You may have a look at the work/build.log file, maybe you'll find the reason why it failed."
     exit 1
 }
