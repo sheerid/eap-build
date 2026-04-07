@@ -1,46 +1,64 @@
 pipeline {
-    agent any
+    agent {
+        label "generic_arm64"
+    }
+
+    tools {
+        jfrog 'jfrog-cli'
+    }
 
     parameters {
-        string(name: 'branch', defaultValue: 'master', description: "Git branch to use")
-        string(name: 'version', defaultValue: '6.4.17', description: "JBoss Version to use")
+        string(name: 'BRANCH', defaultValue: 'master', description: "Git branch to use")
+        string(name: 'VERSION', defaultValue: '7.4.24', description: "JBoss Version to use")
     }
+
+        environment {
+            JFROG_SERVER_ID    = 'sheerid-jfrog'
+        }
+
 
     stages {
 
-      stage('Clone Repos') {
-          steps {
-              git url: "git@github.com:sheerid/eap-build", branch: "${params.branch}"
-          }
-      }
+        stage ('Clone') {
+            steps {
+                echo "Pulling pangaea code for branch ${params.BRANCH}"
+                checkout([
+                    $class: 'GitSCM',
+                    branches: [[name: "${params.BRANCH}"]],
+                    userRemoteConfigs: [
+                        [url: 'git@github.com:sheerid/eap-build.git',
+                         credentialsId: 'ssh-github-sheerid-build']
+                    ]
+                ])
+            }
+        }
 
         stage('Build') {
             steps {
                 dir(".") {
                     sh """
-                    ./build-eap7.sh ${params.version}
+                    ./build-eap7.sh ${params.VERSION}
                     """
                 }
             }
         }
 
-        stage('Deploy') {
+        stage('Upload to Artifactory') {
             steps {
-                dir(".") {
-                    script {
-                        def server = Artifactory.server('Artifactory')
-                        def uploadSpec = """{
-                            "files": [
-                                {
-                                    "pattern": "dist/*.zip",
-                                    "target": "generic-local/jboss/"
-                                }
-                                ]
-                            }"""
-                        def buildInfo = server.upload(uploadSpec)
-                        server.publishBuildInfo buildInfo
-                    }
+                dir("dist") {
+                    jf 'rt u --server-id=${JFROG_SERVER_ID} *.zip generic-local/jboss/'
+                    jf 'rt build-collect-env'
+                    jf 'rt build-publish'
                 }
+            }
+        }
+
+        stage('Xray Scan') {
+            steps {
+                jf """build-scan \
+                    --server-id=${JFROG_SERVER_ID} \
+                    --vuln \
+                    --fail=false"""
             }
         }
     }
